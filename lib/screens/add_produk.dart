@@ -7,8 +7,10 @@ import 'package:pos_kasir/constant.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:pos_kasir/models/api_response.dart';
+import 'package:pos_kasir/screens/produk.dart';
 import 'package:pos_kasir/services/product_services.dart';
-import 'package:pos_kasir/services/user_services.dart';
+
+import '../services/user_services.dart';
 
 import 'login.dart';
 
@@ -29,31 +31,36 @@ class _ProdukFormState extends State<ProdukForm> {
   TextEditingController _stock = TextEditingController();
   TextEditingController _barcode = TextEditingController();
 
-  File? imageFile;
-  final _picker = ImagePicker();
+  final ImagePicker _picker = ImagePicker();
+  XFile? imageFile;
 
-  Future getImage() async {
+  Future<void> getImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        imageFile = File(pickedFile.path);
+        imageFile = pickedFile;
       });
     }
   }
 
   void _addProduct() async {
-    String? image = imageFile == null ? null : getStringImage(imageFile);
+    if (imageFile == null) {
+      // Handle the case when no image is selected
+      return;
+    }
+
+    String? image = imageFile!.path;
 
     int category = int.parse(_kategori.text);
     int priceBuy = int.parse(_priceBuy.text);
     int priceSell = int.parse(_priceSell.text);
     int stock = int.parse(_stock.text);
 
-    ApiResponse response = await addProduct(
+    ApiResponse response = await addProductWithImage(
       _namaProduk.text,
       category,
       _deskripsi.text,
-      image!,
+      image,
       priceBuy,
       priceSell,
       stock,
@@ -61,18 +68,29 @@ class _ProdukFormState extends State<ProdukForm> {
     );
 
     if (response.error == unauthorized) {
+      // Handle unauthorized error
       logout().then((value) => {
             Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const Login()),
-                (route) => false)
+              MaterialPageRoute(builder: (context) => const Login()),
+              (route) => false,
+            ),
           });
     } else if (response.error == null) {
       // ignore: use_build_context_synchronously
-      Navigator.of(context).pop();
-    } else {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const Produk()));
       // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('${response.error}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Product added successfully'),
+        ),
+      );
+    } else {
+      // Show error message to the user
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${response.error}')),
+      );
       setState(() {});
     }
   }
@@ -98,11 +116,13 @@ class _ProdukFormState extends State<ProdukForm> {
             width: MediaQuery.of(context).size.width,
             height: 100,
             decoration: BoxDecoration(
-                image: imageFile == null
-                    ? null
-                    : DecorationImage(
-                        image: FileImage(imageFile ?? File('')),
-                        fit: BoxFit.contain)),
+              image: imageFile != null
+                  ? DecorationImage(
+                      image: FileImage(File(imageFile!.path)),
+                      fit: BoxFit.contain,
+                    )
+                  : null,
+            ),
             child: Center(
               child: IconButton(
                 icon: const Icon(

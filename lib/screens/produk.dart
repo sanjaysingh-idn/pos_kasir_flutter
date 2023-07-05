@@ -1,16 +1,12 @@
 // ignore_for_file: avoid_print
-// import 'dart:convert';
-import 'dart:io';
+// import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:pos_kasir/constant.dart';
 import 'package:pos_kasir/models/api_response.dart';
-// import 'package:pos_kasir/constant.dart';
 import 'package:pos_kasir/screens/home.dart';
-// import 'package:http/http.dart' as http;
 import 'package:pos_kasir/services/product_services.dart';
 
-// import '../services/user_services.dart';
+import '../constant.dart';
 import 'add_produk.dart';
 
 class Produk extends StatefulWidget {
@@ -26,6 +22,7 @@ class _ProdukState extends State<Produk> {
     color: Colors.white,
     fontWeight: FontWeight.bold,
   );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,6 +55,13 @@ class _ProdukState extends State<Produk> {
                 return ListView.builder(
                   itemCount: products.length,
                   itemBuilder: (context, index) {
+                    var item = products[index];
+                    var categoryName =
+                        products[index]['category']['name'] ?? '';
+                    dynamic getImageIndex = products[index]['image'];
+                    String imageUrlWithProduct =
+                        getImageIndex != null ? imageUrl + getImageIndex : '';
+                    print(categoryName);
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Card(
@@ -70,8 +74,8 @@ class _ProdukState extends State<Produk> {
                               SizedBox(
                                 width: 50,
                                 height: 50,
-                                child: Image.asset(
-                                  AppAssets.defaultImg,
+                                child: Image(
+                                  image: NetworkImage(imageUrlWithProduct),
                                   fit: BoxFit.contain,
                                 ),
                               ),
@@ -89,20 +93,20 @@ class _ProdukState extends State<Produk> {
                                     ),
                                     const SizedBox(height: 5),
                                     Text(
-                                      products[index]['name'] as String,
+                                      '${item['name']}',
                                       style: const TextStyle(
                                         fontSize: 15.0,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     const SizedBox(height: 5),
-                                    const Text('Kategori'),
+                                    const Text('text'),
                                     const SizedBox(height: 5),
                                     Container(
                                       decoration: BoxDecoration(
                                         color: backgroundColor,
-                                        borderRadius: BorderRadius.circular(
-                                            8.0), // Set the desired border radius
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
                                       ),
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),

@@ -15,8 +15,6 @@ class _CategoryState extends State<Category> {
   final GlobalKey<FormState> formkey = GlobalKey<FormState>();
   TextEditingController namaKategori = TextEditingController();
 
-  String? get icon => null;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,7 +79,7 @@ class _CategoryState extends State<Category> {
                           children: [
                             kTextButton('Tambah Kategori', () {
                               if (formkey.currentState!.validate()) {
-                                addCategory(namaKategori.text, icon);
+                                addCategory(namaKategori.text);
                                 setState(() {});
                               }
                               // formKey.currentState.reset()

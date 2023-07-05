@@ -1,7 +1,9 @@
+import 'package:pos_kasir/models/category.dart';
+
 class Produk {
   int? id;
   String? name;
-  int? category;
+  Category? category;
   String? desc;
   String? image;
   int? priceBuy;
@@ -26,7 +28,7 @@ class Produk {
     return Produk(
       id: json['id'],
       name: json['name'],
-      category: json['category'],
+      category: Category.fromJson(json['category']),
       desc: json['desc'],
       image: json['image'],
       barcode: json['barcode'],

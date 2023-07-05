@@ -38,24 +38,16 @@ Future<ApiResponse> getCategory() async {
   return apiResponse;
 }
 
-Future<ApiResponse> addCategory(String name, String? icon) async {
+Future<ApiResponse> addCategory(String name) async {
   ApiResponse apiResponse = ApiResponse();
   try {
     String token = await getToken();
-    final response = await http.post(Uri.parse(categoryURL),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token'
-        },
-        body: icon != null
-            ? {
-                'name': name,
-                'icon': icon,
-              }
-            : {
-                'name': name,
-              });
-    // if icon not upload then only insert name
+    final response = await http.post(Uri.parse(categoryURL), headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token'
+    }, body: {
+      'name': name,
+    });
     switch (response.statusCode) {
       case 200:
         apiResponse.data = jsonDecode(response.body);

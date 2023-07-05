@@ -8,6 +8,8 @@ const profileURL = '$baseURL/profile';
 const addUserURL = '$baseURL/add_user';
 const logoutURL = '$baseURL/logout';
 
+const imageUrl = 'http://10.0.2.2:8000/storage/';
+
 const categoryURL = '$baseURL/category';
 const productURL = '$baseURL/product';
 
