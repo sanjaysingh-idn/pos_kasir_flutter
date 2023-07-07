@@ -1,12 +1,14 @@
 // ignore_for_file: avoid_print
 // import 'dart:io';
+// import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:pos_kasir/models/api_response.dart';
-import 'package:pos_kasir/screens/home.dart';
+import 'package:pos_kasir/screens/detail_produk.dart';
 import 'package:pos_kasir/services/product_services.dart';
 
-import '../constant.dart';
+// import '../constant.dart';
 import 'add_produk.dart';
 
 class Produk extends StatefulWidget {
@@ -56,14 +58,8 @@ class _ProdukState extends State<Produk> {
                   itemCount: products.length,
                   itemBuilder: (context, index) {
                     var item = products[index];
-                    var categoryName =
-                        products[index]['category']['name'] ?? '';
-                    dynamic getImageIndex = products[index]['image'];
-                    String imageUrlWithProduct =
-                        getImageIndex != null ? imageUrl + getImageIndex : '';
-                    print(categoryName);
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 1),
                       child: Card(
                         color: Colors.white,
                         elevation: 3,
@@ -72,10 +68,10 @@ class _ProdukState extends State<Produk> {
                           child: Row(
                             children: [
                               SizedBox(
-                                width: 50,
-                                height: 50,
-                                child: Image(
-                                  image: NetworkImage(imageUrlWithProduct),
+                                width: 100,
+                                height: 100,
+                                child: Image.asset(
+                                  "assets/img_default/default.jpg",
                                   fit: BoxFit.contain,
                                 ),
                               ),
@@ -100,7 +96,7 @@ class _ProdukState extends State<Produk> {
                                       ),
                                     ),
                                     const SizedBox(height: 5),
-                                    const Text('text'),
+                                    Text(item['category']['name']),
                                     const SizedBox(height: 5),
                                     Container(
                                       decoration: BoxDecoration(
@@ -111,17 +107,17 @@ class _ProdukState extends State<Produk> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
-                                          'Rp. 12,000',
+                                          'Rp. ${NumberFormat('#,##0').format(item['priceSell'])}',
                                           style: greenBoldTextStyle,
                                         ),
                                       ),
                                     ),
                                     const SizedBox(height: 5),
-                                    const Align(
+                                    Align(
                                       alignment: Alignment.center,
                                       child: Text(
-                                        'Stok: 5',
-                                        style: TextStyle(
+                                        'Stok: ${item['stock']}',
+                                        style: const TextStyle(
                                           fontSize: 14.0,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -132,13 +128,40 @@ class _ProdukState extends State<Produk> {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  deleteProduct(products[index]['id'] as int)
-                                      .then((value) {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              ProdukDetail(product: item)));
+                                },
+                                child: const Icon(
+                                  Icons.info_outline_rounded,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: () {
+                                  // int productId = item['id'] as int;
+                                  // Navigator.push(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder: (context) =>
+                                  //         edit_produk(productId: productId),
+                                  //   ),
+                                  // );
+                                },
+                                child: const Icon(
+                                  Icons.edit_document,
+                                  color: Colors.green,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
+                                onTap: () {
+                                  deleteProduct(item['id']).then((value) {
                                     setState(() {});
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(const SnackBar(
-                                      content: Text('Produk Berhasil dihapus'),
-                                    ));
+                                    ScaffoldMessenger.of(context).showSnackBar;
                                   });
                                 },
                                 child: const Icon(
@@ -169,7 +192,6 @@ class _ProdukState extends State<Produk> {
         backgroundColor: Colors.lightBlue,
         child: const Icon(Icons.add),
       ),
-      drawer: const Sidebar(),
     );
   }
 }

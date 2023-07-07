@@ -159,7 +159,72 @@ Future<ApiResponse> addProduct(
   return apiResponse;
 }
 
+Future<ApiResponse> updateProductWithImage(
+  int productId,
+  String name,
+  int category,
+  String desc,
+  String imagePath,
+  int priceBuy,
+  int priceSell,
+  int stock,
+  String barcode,
+) async {
+  ApiResponse apiResponse = ApiResponse();
+  try {
+    String token = await getToken();
+
+    var request =
+        http.MultipartRequest('PUT', Uri.parse('$productURL/$productId'));
+    request.headers.addAll({
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    // Add product data
+    request.fields['name'] = name;
+    request.fields['category'] = category.toString();
+    request.fields['desc'] = desc;
+    request.fields['priceBuy'] = priceBuy.toString();
+    request.fields['priceSell'] = priceSell.toString();
+    request.fields['stock'] = stock.toString();
+    request.fields['barcode'] = barcode;
+
+    // Add image file
+    if (imagePath.isNotEmpty) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'image',
+        imagePath,
+        contentType:
+            MediaType('image', 'jpeg'), // Adjust the content type as needed
+      ));
+    }
+
+    final response = await request.send();
+    final responseBody = await response.stream.bytesToString();
+
+    // Process the response
+    if (response.statusCode == 200) {
+      apiResponse.data = jsonDecode(responseBody);
+    } else if (response.statusCode == 422) {
+      final errors = jsonDecode(responseBody)['errors'];
+      apiResponse.errors[errors.keys.elementAt(0)] = [
+        errors.values.elementAt(0)
+      ];
+    } else if (response.statusCode == 401) {
+      apiResponse.error = unauthorized;
+    } else {
+      apiResponse.error = somethingWentWrong;
+    }
+  } catch (e) {
+    print(e.toString());
+  }
+
+  return apiResponse;
+}
+
 Future<ApiResponse> deleteProduct(int productId) async {
+  // print('Product ID to be deleted: $productId');
   ApiResponse apiResponse = ApiResponse();
   try {
     String token = await getToken();
@@ -181,9 +246,11 @@ Future<ApiResponse> deleteProduct(int productId) async {
         break;
       default:
         apiResponse.error = somethingWentWrong;
+        print(apiResponse.error);
         break;
     }
   } catch (e) {
+    print(e);
     apiResponse.error = serverError;
   }
 

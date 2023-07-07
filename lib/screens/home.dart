@@ -4,6 +4,7 @@ import 'package:pos_kasir/screens/produk.dart';
 import 'package:pos_kasir/services/user_services.dart';
 
 import 'login.dart';
+import 'transaksi.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -119,17 +120,22 @@ class _HomeState extends State<Home> {
                 },
               ),
               const SizedBox(height: 10),
-              const ListTile(
+              ListTile(
                 tileColor: Colors.lightBlue,
-                shape: RoundedRectangleBorder(
+                shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(15))),
-                leading: Icon(
+                leading: const Icon(
                   Icons.attach_money_rounded,
                   color: Colors.white,
                 ),
-                title: Text('Transaksi'),
+                title: const Text('Transaksi'),
                 textColor: Colors.white,
-                // onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const Transaksi()));
+                },
               ),
               const SizedBox(height: 10),
               const ListTile(
@@ -157,14 +163,31 @@ class _HomeState extends State<Home> {
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded), label: 'Home'),
+            icon: Icon(Icons.home_rounded),
+            label: 'Home',
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.attach_money_rounded), label: 'Transaksi'),
+            icon: Icon(Icons.attach_money_rounded),
+            label: 'Transaksi',
+          ),
         ],
         currentIndex: currentIndex,
         onTap: (value) {
           setState(() {
             currentIndex = value;
+            if (currentIndex == 0) {
+              // Navigate to the home page
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const Home()),
+              );
+            } else if (currentIndex == 1) {
+              // Navigate to the transaksi page
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const Transaksi()),
+              );
+            }
           });
         },
       ),

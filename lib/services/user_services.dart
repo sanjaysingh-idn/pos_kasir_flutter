@@ -33,6 +33,8 @@ Future<ApiResponse> login(String email, String password) async {
     }
   } catch (e) {
     apiResponse.error = serverError;
+    // ignore: avoid_print
+    print(e.toString());
   }
 
   return apiResponse;
@@ -81,6 +83,35 @@ Future<ApiResponse> profile() async {
     String token = await getToken();
 
     final response = await http.get(Uri.parse(profileURL), headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token'
+    });
+
+    switch (response.statusCode) {
+      case 200:
+        apiResponse.data = User.fromJson(jsonDecode(response.body));
+        break;
+      case 401:
+        apiResponse.error = unauthorized;
+        break;
+      default:
+        apiResponse.error = somethingWentWrong;
+        break;
+    }
+  } catch (e) {
+    apiResponse.error = serverError;
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> updateProfile(
+    String name, String? image, String email) async {
+  ApiResponse apiResponse = ApiResponse();
+  try {
+    String token = await getToken();
+
+    final response = await http.put(Uri.parse(profileURL), headers: {
       'Accept': 'application/json',
       'Authorization': 'Bearer $token'
     });

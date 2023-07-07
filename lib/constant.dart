@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 
-const baseURL = 'http://10.0.2.2:8000/api';
+// URL untuk android real device -> Ip sesuai ipv4
+// php artisan serve --host=192.168.42.125 --port=8000
+const baseURL = 'http://192.168.42.125:8000/api';
+const imageUrl = 'http://192.168.42.125:8000/storage/';
+
+// URL emulator
+// php artisan serve
+// const baseURL = 'http://10.0.2.2:8000/api';
+// const imageUrl = 'http://10.0.2.2:8000/storage/';
+
 const loginURL = '$baseURL/login';
 
 const userURL = '$baseURL/user';
 const profileURL = '$baseURL/profile';
 const addUserURL = '$baseURL/add_user';
 const logoutURL = '$baseURL/logout';
-
-const imageUrl = 'http://10.0.2.2:8000/storage/';
 
 const categoryURL = '$baseURL/category';
 const productURL = '$baseURL/product';

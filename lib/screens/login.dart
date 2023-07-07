@@ -23,16 +23,30 @@ class _LoginState extends State<Login> {
   bool loading = false;
 
   void _loginUser() async {
-    ApiResponse response = await login(txtEmail.text, txtPassword.text);
-    if (response.error == null) {
-      _saveAndRedirectToHome(response.data as User);
-    } else {
+    try {
+      setState(() {
+        loading = true;
+      });
+
+      ApiResponse response = await login(txtEmail.text, txtPassword.text);
+
+      if (response.error == null) {
+        _saveAndRedirectToHome(response.data as User);
+      } else {
+        setState(() {
+          loading = false;
+        });
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('${response.error}')));
+      }
+    } catch (e) {
       setState(() {
         loading = false;
       });
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('${response.error}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('An error occurred during login')),
+      );
     }
   }
 

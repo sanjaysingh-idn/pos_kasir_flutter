@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../constant.dart';
 import '../models/api_response.dart';
 import '../services/category_services.dart';
-import 'home.dart';
 
 class Category extends StatefulWidget {
   const Category({super.key});
@@ -34,19 +33,6 @@ class _CategoryState extends State<Category> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Align(
-                alignment: Alignment.topLeft,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 20, left: 20, top: 20),
-                  child: Text(
-                    'Halaman Manajemen Kategori Produk',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
               const SizedBox(height: 5),
               Form(
                 // Add your form fields here
@@ -63,13 +49,13 @@ class _CategoryState extends State<Category> {
                           }
                           return null;
                         },
-                        decoration: InputDecoration(
-                            labelText: 'Nama Kategori',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            )
-                            // Add other decoration properties as needed
-                            ),
+                        decoration: const InputDecoration(
+                          labelText: 'Nama Kategori',
+                          // border: OutlineInputBorder(
+                          //   borderRadius: BorderRadius.circular(10.0),
+                          // )
+                          // Add other decoration properties as needed
+                        ),
                         // Add validator, controller, onChanged, and other properties as needed
                       ),
                       Padding(
@@ -174,34 +160,6 @@ class _CategoryState extends State<Category> {
           ),
         ],
       ),
-      drawer: const Sidebar(),
     );
   }
 }
-
-// if (snapshot.connectionState == ConnectionState.waiting) {
-//                       return const CircularProgressIndicator();
-//                     } else if (snapshot.hasError) {
-//                       return const Text('Error fetching data');
-//                     } else {
-//                       if (snapshot.hasData) {
-//                         ApiResponse apiResponse = snapshot.data!;
-//                         if (apiResponse.error != null) {
-//                           return const Text('Data error');
-//                         } else {
-//                           List<dynamic> categories = (apiResponse.data
-//                               as Map<String, dynamic>)['categories'];
-//                           return ListView.builder(
-//                             itemCount: categories.length,
-//                             itemBuilder: (context, index) {
-//                               return ListTile(
-//                                 title:
-//                                     Text(categories[index]['name'] as String),
-//                               );
-//                             },
-//                           );
-//                         }
-//                       } else {
-//                         return const Text('No data available');
-//                       }
-//                     }

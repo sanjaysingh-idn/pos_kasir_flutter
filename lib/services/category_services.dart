@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:pos_kasir/constant.dart';
@@ -17,7 +19,6 @@ Future<ApiResponse> getCategory() async {
 
     switch (response.statusCode) {
       case 200:
-        // ignore: avoid_print
         // print(jsonDecode(response.body));
         apiResponse.data = jsonDecode(response.body);
         break;
@@ -64,7 +65,6 @@ Future<ApiResponse> addCategory(String name) async {
         break;
     }
   } catch (e) {
-    // ignore: avoid_print
     print('error: $e');
     // print(apiResponse.error);
   }

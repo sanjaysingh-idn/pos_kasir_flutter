@@ -1,40 +1,57 @@
 import 'package:pos_kasir/models/category.dart';
 
 class Produk {
-  int? id;
-  String? name;
-  Category? category;
-  String? desc;
-  String? image;
-  int? priceBuy;
-  int? priceSell;
-  int? stock;
-  String? barcode;
+  int id;
+  String name;
+  Category category;
+  String desc;
+  dynamic image;
+  int priceBuy;
+  int priceSell;
+  int stock;
+  String barcode;
+  DateTime createdAt;
+  DateTime updatedAt;
 
   Produk({
-    this.id,
-    this.name,
-    this.category,
-    this.desc,
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.desc,
     this.image,
-    this.barcode,
-    this.priceBuy,
-    this.priceSell,
-    this.stock,
+    required this.priceBuy,
+    required this.priceSell,
+    required this.stock,
+    required this.barcode,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
-  // Convert json data to Produk model
-  factory Produk.fromJson(Map<String, dynamic> json) {
-    return Produk(
-      id: json['id'],
-      name: json['name'],
-      category: Category.fromJson(json['category']),
-      desc: json['desc'],
-      image: json['image'],
-      barcode: json['barcode'],
-      priceBuy: json['priceBuy'],
-      priceSell: json['priceSell'],
-      stock: json['stock'],
-    );
-  }
+  factory Produk.fromJson(Map<String, dynamic> json) => Produk(
+        id: json["id"],
+        name: json["name"],
+        category: Category.fromJson(json["category"]),
+        desc: json["desc"],
+        image: json["image"],
+        priceBuy: json["priceBuy"],
+        priceSell: json["priceSell"],
+        stock: json["stock"],
+        barcode: json["barcode"],
+        createdAt: DateTime.parse(json["created_at"]),
+        updatedAt: DateTime.parse(json["updated_at"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "name": name,
+        "category": category.toJson(),
+        "desc": desc,
+        "image": image,
+        "priceBuy": priceBuy,
+        "priceSell": priceSell,
+        "stock": stock,
+        "barcode": barcode,
+        "created_at": createdAt.toIso8601String(),
+        "updated_at": updatedAt.toIso8601String(),
+      };
 }

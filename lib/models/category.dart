@@ -1,17 +1,19 @@
 class Category {
-  int? id;
-  String? name;
+  int id;
+  String name;
 
   Category({
-    this.id,
-    this.name,
+    required this.id,
+    required this.name,
   });
 
-  // Convert json data to Category model
-  factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(
-      id: json['id'],
-      name: json['name'],
-    );
-  }
+  factory Category.fromJson(Map<String, dynamic> json) => Category(
+        id: json["id"],
+        name: json["name"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "name": name,
+      };
 }

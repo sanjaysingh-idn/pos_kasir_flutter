@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_final_fields
+// ignore_for_file: prefer_final_fields, avoid_print
 
 import 'dart:io';
 
@@ -9,7 +9,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pos_kasir/models/api_response.dart';
 import 'package:pos_kasir/screens/produk.dart';
 import 'package:pos_kasir/services/product_services.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
+import '../models/category.dart';
+import '../services/category_services.dart';
 import '../services/user_services.dart';
 
 import 'login.dart';
@@ -24,7 +27,6 @@ class ProdukForm extends StatefulWidget {
 class _ProdukFormState extends State<ProdukForm> {
   final GlobalKey<FormState> formkey = GlobalKey<FormState>();
   TextEditingController _namaProduk = TextEditingController();
-  TextEditingController _kategori = TextEditingController();
   TextEditingController _deskripsi = TextEditingController();
   TextEditingController _priceBuy = TextEditingController();
   TextEditingController _priceSell = TextEditingController();
@@ -33,6 +35,32 @@ class _ProdukFormState extends State<ProdukForm> {
 
   final ImagePicker _picker = ImagePicker();
   XFile? imageFile;
+  int? selectedCategoryId;
+  List<Category>? categories;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCategories();
+  }
+
+  Future<void> fetchCategories() async {
+    ApiResponse response = await getCategory();
+    if (response.error == null) {
+      Map<String, dynamic> responseData = response.data as Map<String, dynamic>;
+      // print(responseData['categories']);
+      List<dynamic> categoryList = responseData['categories'];
+      setState(() {
+        categories =
+            categoryList.map((json) => Category.fromJson(json)).toList();
+      });
+    } else {
+      // Handle error case
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('${response.error}')));
+    }
+  }
 
   Future<void> getImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -51,47 +79,61 @@ class _ProdukFormState extends State<ProdukForm> {
 
     String? image = imageFile!.path;
 
-    int category = int.parse(_kategori.text);
+    int category = selectedCategoryId ?? 0;
     int priceBuy = int.parse(_priceBuy.text);
     int priceSell = int.parse(_priceSell.text);
     int stock = int.parse(_stock.text);
 
-    ApiResponse response = await addProductWithImage(
-      _namaProduk.text,
-      category,
-      _deskripsi.text,
-      image,
-      priceBuy,
-      priceSell,
-      stock,
-      _barcode.text,
-    );
+    try {
+      ApiResponse response = await addProductWithImage(
+        _namaProduk.text,
+        category,
+        _deskripsi.text,
+        image,
+        priceBuy,
+        priceSell,
+        stock,
+        _barcode.text,
+      );
 
-    if (response.error == unauthorized) {
-      // Handle unauthorized error
-      logout().then((value) => {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => const Login()),
-              (route) => false,
-            ),
-          });
-    } else if (response.error == null) {
-      // ignore: use_build_context_synchronously
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => const Produk()));
+      if (response.error == unauthorized) {
+        // Handle unauthorized error
+        logout().then((value) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const Login()),
+            (route) => false,
+          );
+        });
+      } else if (response.error == null) {
+        // ignore: use_build_context_synchronously
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Produk()),
+        );
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Product added successfully'),
+          ),
+        );
+      } else {
+        // Show error message to the user
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${response.error}')),
+        );
+        setState(() {});
+      }
+    } catch (e) {
+      // Handle any exceptions or errors that occur
+      print('Error: $e');
+      // Display error message to the user
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Product added successfully'),
+          content: Text('An error occurred while adding the product'),
         ),
       );
-    } else {
-      // Show error message to the user
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${response.error}')),
-      );
-      setState(() {});
     }
   }
 
@@ -154,7 +196,7 @@ class _ProdukFormState extends State<ProdukForm> {
                       labelText: 'Nama Produk',
                       labelStyle: const TextStyle(fontSize: 12),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                        borderRadius: BorderRadius.circular(20.0),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8.0, horizontal: 12.0),
@@ -163,23 +205,23 @@ class _ProdukFormState extends State<ProdukForm> {
                   const SizedBox(
                     height: 10,
                   ),
-                  TextFormField(
-                    controller: _kategori,
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return "Kategori tidak boleh kosong";
-                      }
-                      return null;
+                  DropdownButtonFormField<int>(
+                    value: selectedCategoryId,
+                    items: categories?.map((category) {
+                      return DropdownMenuItem<int>(
+                        value: category.id,
+                        child: Text(category.name),
+                      );
+                    }).toList(),
+                    iconEnabledColor: Colors.lightBlue,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedCategoryId = value!;
+                      });
                     },
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Kategori',
-                      labelStyle: const TextStyle(fontSize: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 12.0),
+                      border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(
@@ -197,7 +239,7 @@ class _ProdukFormState extends State<ProdukForm> {
                       labelText: 'Deskripsi',
                       labelStyle: const TextStyle(fontSize: 12),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                        borderRadius: BorderRadius.circular(20.0),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8.0, horizontal: 12.0),
@@ -219,7 +261,7 @@ class _ProdukFormState extends State<ProdukForm> {
                       labelText: 'Harga Beli',
                       labelStyle: const TextStyle(fontSize: 12),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                        borderRadius: BorderRadius.circular(20.0),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8.0, horizontal: 12.0),
@@ -241,7 +283,7 @@ class _ProdukFormState extends State<ProdukForm> {
                       labelText: 'Harga Jual',
                       labelStyle: const TextStyle(fontSize: 12),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                        borderRadius: BorderRadius.circular(20.0),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8.0, horizontal: 12.0),
@@ -263,7 +305,7 @@ class _ProdukFormState extends State<ProdukForm> {
                       labelText: 'Stok',
                       labelStyle: const TextStyle(fontSize: 12),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
+                        borderRadius: BorderRadius.circular(20.0),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 8.0, horizontal: 12.0),
@@ -274,22 +316,39 @@ class _ProdukFormState extends State<ProdukForm> {
                   ),
                   TextFormField(
                     controller: _barcode,
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return "Barcode tidak boleh kosong";
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Barcode',
-                      labelStyle: const TextStyle(fontSize: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 12.0),
                     ),
                   ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      String barcodeScanResult =
+                          await FlutterBarcodeScanner.scanBarcode(
+                              '#ff6666', 'Cancel', true, ScanMode.DEFAULT);
+                      setState(() {
+                        _barcode.text = barcodeScanResult;
+                      });
+                    },
+                    child: const Text('Scan Barcode'),
+                  ),
+                  // TextFormField(
+                  //   controller: _barcode,
+                  //   validator: (value) {
+                  //     if (value!.isEmpty) {
+                  //       return "Barcode tidak boleh kosong";
+                  //     }
+                  //     return null;
+                  //   },
+                  //   decoration: InputDecoration(
+                  //     labelText: 'Barcode',
+                  //     labelStyle: const TextStyle(fontSize: 12),
+                  //     border: OutlineInputBorder(
+                  //       borderRadius: BorderRadius.circular(20.0),
+                  //     ),
+                  //     contentPadding: const EdgeInsets.symmetric(
+                  //         vertical: 8.0, horizontal: 12.0),
+                  //   ),
+                  // ),
                   const SizedBox(
                     height: 10,
                   ),
