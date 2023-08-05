@@ -116,7 +116,7 @@ class _HomeState extends State<Home> {
                 textColor: Colors.white,
                 onTap: () {
                   Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => const Produk()));
+                      MaterialPageRoute(builder: (context) => const Product()));
                 },
               ),
               const SizedBox(height: 10),
@@ -275,7 +275,7 @@ class Sidebar extends StatelessWidget {
             textColor: Colors.white,
             onTap: () {
               Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const Produk()));
+                  MaterialPageRoute(builder: (context) => const Product()));
             },
           ),
           const SizedBox(height: 5),

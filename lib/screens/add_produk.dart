@@ -108,7 +108,7 @@ class _ProdukFormState extends State<ProdukForm> {
         // ignore: use_build_context_synchronously
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const Produk()),
+          MaterialPageRoute(builder: (context) => const Product()),
         );
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(

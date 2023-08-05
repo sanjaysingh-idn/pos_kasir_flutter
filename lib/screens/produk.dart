@@ -1,35 +1,231 @@
-// ignore_for_file: avoid_print
-// import 'dart:io';
-// import 'package:cached_network_image/cached_network_image.dart';
+// ignore_for_file: avoid_print, prefer_interpolation_to_compose_strings
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:pos_kasir/models/api_response.dart';
-import 'package:pos_kasir/screens/detail_produk.dart';
-import 'package:pos_kasir/services/product_services.dart';
+import '../screens/edit_product.dart';
+import '../screens/home.dart';
 
-// import '../constant.dart';
+import '../constant.dart';
+import '../models/api_response.dart';
 import 'add_produk.dart';
+import '../models/produk.dart';
+import '../services/product_services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
-class Produk extends StatefulWidget {
-  const Produk({super.key});
+class Product extends StatefulWidget {
+  const Product({Key? key}) : super(key: key);
 
   @override
-  State<Produk> createState() => _ProdukState();
+  State<Product> createState() => _ProductState();
 }
 
-class _ProdukState extends State<Produk> {
-  Color backgroundColor = Colors.lightBlue;
-  TextStyle greenBoldTextStyle = const TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.bold,
-  );
+class _ProductState extends State<Product> {
+  String _searchQuery = "";
+  List<Produk> _dataList = []; // Initialize the list as an empty list
+  List<Produk> _searchResults = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProductData(); // Fetch products when the widget is initialized
+  }
+
+  Future<void> _fetchProductData() async {
+    ApiResponse response = await getProduct();
+    if (response.error == null) {
+      Map<String, dynamic>? responseData =
+          response.data as Map<String, dynamic>?;
+      List<dynamic>? productList = responseData?['products'] as List<dynamic>?;
+      if (productList != null) {
+        setState(() {
+          _dataList = parseProductList(productList);
+          _handleSearch(
+              _searchQuery); // Update search results after fetching products
+        });
+      } else {
+        // Handle the case when the 'products' key is not present in the response
+      }
+    } else {
+      // Handle error case
+      // You can show an error message to the user if needed
+    }
+  }
+
+  void _handleSearch(String query) {
+    List<Produk> results = [];
+    if (query.isNotEmpty) {
+      results = _dataList
+          .where((product) =>
+              product.name.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+    setState(() {
+      _searchQuery = query;
+      _searchResults = results;
+    });
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextField(
+        onChanged: _handleSearch,
+        decoration: InputDecoration(
+          hintText: 'Search...',
+          prefixIcon: const Icon(Icons.search),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductList() {
+    final int itemCount =
+        _searchQuery.isEmpty ? _dataList.length : _searchResults.length;
+    return Expanded(
+      child: ListView.builder(
+        padding: const EdgeInsets.all(15.0),
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          final product =
+              _searchQuery.isEmpty ? _dataList[index] : _searchResults[index];
+          // String imageUrl = '$getImageURL${product.image}';
+
+          // print("Product Image URL: $imageUrl");
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            child: ListTile(
+              leading: product.image != null
+                  ? CachedNetworkImage(
+                      imageUrl: "$imageUrl${product.image}",
+                      width: 50,
+                      height: 50,
+                      imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                    )
+                  : CachedNetworkImage(
+                      imageUrl: "http://via.placeholder.com/200x150",
+                      width: 50,
+                      height: 50,
+                      imageBuilder: (context, imageProvider) => Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                    ),
+              title: Row(
+                children: [
+                  Expanded(
+                    // Wrap the Row with Expanded
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.name,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Category: ${product.category?.name ?? ''}',
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Rp. ${NumberFormat('#,##0').format(product.priceSell)}',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
+                        // Add more text widgets here...
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text(product.name),
+                        ),
+                      );
+                    },
+                    child: const Icon(
+                      Icons.info_outline_rounded,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: () {
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) =>
+                      //         EditProductForm(product: product),
+                      //   ),
+                      // ).then((result) {
+                      //   // You can handle any result from the EditProductForm page if needed.
+                      // });
+                    },
+                    child: const Icon(
+                      Icons.edit_document,
+                      color: Colors.green,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  GestureDetector(
+                    onTap: () {
+                      deleteProduct(product.id).then((value) {
+                        setState(() {
+                          _fetchProductData();
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Product berhasil dihapus'),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      });
+                    },
+                    child: const Icon(
+                      Icons.delete_rounded,
+                      color: Colors.red,
+                    ),
+                  ),
+                ],
+              ),
+              // Rest of the ListTile code...
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Daftar Produk'),
+        title: const Text('Data Produk'),
         centerTitle: true,
         backgroundColor: Colors.lightBlue,
         shape: const RoundedRectangleBorder(
@@ -39,155 +235,17 @@ class _ProdukState extends State<Produk> {
           ),
         ),
       ),
-      body: FutureBuilder<ApiResponse>(
-        future: getProduct(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
-          } else if (snapshot.hasError) {
-            return const Text('Error fetching data');
-          } else {
-            if (snapshot.hasData) {
-              ApiResponse apiResponse = snapshot.data!;
-              if (apiResponse.error != null) {
-                return const Text('Data error');
-              } else {
-                List<dynamic> products =
-                    (apiResponse.data as Map<String, dynamic>)['products'];
-                return ListView.builder(
-                  itemCount: products.length,
-                  itemBuilder: (context, index) {
-                    var item = products[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 1),
-                      child: Card(
-                        color: Colors.white,
-                        elevation: 3,
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 100,
-                                height: 100,
-                                child: Image.asset(
-                                  "assets/img_default/default.jpg",
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.bottomCenter,
-                                      child: Text(
-                                        'Rp. 12,000',
-                                        style: greenBoldTextStyle,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Text(
-                                      '${item['name']}',
-                                      style: const TextStyle(
-                                        fontSize: 15.0,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Text(item['category']['name']),
-                                    const SizedBox(height: 5),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: backgroundColor,
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          'Rp. ${NumberFormat('#,##0').format(item['priceSell'])}',
-                                          style: greenBoldTextStyle,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        'Stok: ${item['stock']}',
-                                        style: const TextStyle(
-                                          fontSize: 14.0,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              ProdukDetail(product: item)));
-                                },
-                                child: const Icon(
-                                  Icons.info_outline_rounded,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: () {
-                                  // int productId = item['id'] as int;
-                                  // Navigator.push(
-                                  //   context,
-                                  //   MaterialPageRoute(
-                                  //     builder: (context) =>
-                                  //         edit_produk(productId: productId),
-                                  //   ),
-                                  // );
-                                },
-                                child: const Icon(
-                                  Icons.edit_document,
-                                  color: Colors.green,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: () {
-                                  deleteProduct(item['id']).then((value) {
-                                    setState(() {});
-                                    ScaffoldMessenger.of(context).showSnackBar;
-                                  });
-                                },
-                                child: const Icon(
-                                  Icons.delete_rounded,
-                                  color: Colors.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }
-            } else {
-              return const Text('No data available');
-            }
-          }
-        },
+      body: Column(
+        children: [
+          _buildSearchBar(),
+          _buildProductList(),
+        ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const ProdukForm()));
+            MaterialPageRoute(builder: (context) => const ProdukForm()),
+          );
         },
         backgroundColor: Colors.lightBlue,
         child: const Icon(Icons.add),
