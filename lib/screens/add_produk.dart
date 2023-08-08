@@ -7,7 +7,6 @@ import 'package:pos_kasir/constant.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:pos_kasir/models/api_response.dart';
-import 'package:pos_kasir/screens/produk.dart';
 import 'package:pos_kasir/services/product_services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -73,7 +72,8 @@ class _ProdukFormState extends State<ProdukForm> {
 
   void _addProduct() async {
     if (imageFile == null) {
-      // Handle the case when no image is selected
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Foto Produk harus di isi')));
       return;
     }
 
@@ -106,10 +106,7 @@ class _ProdukFormState extends State<ProdukForm> {
         });
       } else if (response.error == null) {
         // ignore: use_build_context_synchronously
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Product()),
-        );
+        Navigator.pop(context, true);
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -331,24 +328,6 @@ class _ProdukFormState extends State<ProdukForm> {
                     },
                     child: const Text('Scan Barcode'),
                   ),
-                  // TextFormField(
-                  //   controller: _barcode,
-                  //   validator: (value) {
-                  //     if (value!.isEmpty) {
-                  //       return "Barcode tidak boleh kosong";
-                  //     }
-                  //     return null;
-                  //   },
-                  //   decoration: InputDecoration(
-                  //     labelText: 'Barcode',
-                  //     labelStyle: const TextStyle(fontSize: 12),
-                  //     border: OutlineInputBorder(
-                  //       borderRadius: BorderRadius.circular(20.0),
-                  //     ),
-                  //     contentPadding: const EdgeInsets.symmetric(
-                  //         vertical: 8.0, horizontal: 12.0),
-                  //   ),
-                  // ),
                   const SizedBox(
                     height: 10,
                   ),

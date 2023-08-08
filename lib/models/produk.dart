@@ -9,6 +9,7 @@ class Produk {
   int priceBuy;
   int priceSell;
   int stock;
+  String barcode;
   DateTime createdAt;
   DateTime updatedAt;
 
@@ -21,6 +22,7 @@ class Produk {
     required this.priceBuy,
     required this.priceSell,
     required this.stock,
+    required this.barcode,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -36,6 +38,7 @@ class Produk {
         priceBuy: json["priceBuy"],
         priceSell: json["priceSell"],
         stock: json["stock"],
+        barcode: json["barcode"],
         createdAt: DateTime.parse(json["created_at"]),
         updatedAt: DateTime.parse(json["updated_at"]),
       );
@@ -49,6 +52,7 @@ class Produk {
         "priceBuy": priceBuy,
         "priceSell": priceSell,
         "stock": stock,
+        "barcode": barcode,
         "created_at": createdAt.toIso8601String(),
         "updated_at": updatedAt.toIso8601String(),
       };

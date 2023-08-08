@@ -14,8 +14,12 @@ import 'package:flutter/material.dart';
 
 // URL emulator
 // php artisan serve
-const baseURL = 'http://10.0.2.2:8000/api';
-const imageUrl = 'http://10.0.2.2:8000/storage/';
+// const baseURL = 'http://10.0.2.2:8000/api';
+// const imageUrl = 'http://10.0.2.2:8000/storage/';
+
+// URL Domain
+const baseURL = 'https://tokorejeki.my.id/api';
+const imageUrl = 'https://tokorejeki.my.id/storage/';
 
 const loginURL = '$baseURL/login';
 
@@ -26,8 +30,11 @@ const logoutURL = '$baseURL/logout';
 
 const categoryURL = '$baseURL/category';
 const productURL = '$baseURL/product';
+const editProductURL = '$baseURL/editproduct';
+const transactionByDateURL = '$baseURL/transaction-by-date';
 const transactionURL = '$baseURL/transaction';
 const transactionTodayURL = '$baseURL/transaction-today';
+const transactionWeekURL = '$baseURL/transaction-week';
 const transactionMonthURL = '$baseURL/transaction-month';
 const transactionYearURL = '$baseURL/transaction-year';
 const getTotalURL = '$baseURL/total';

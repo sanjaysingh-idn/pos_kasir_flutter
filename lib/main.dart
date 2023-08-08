@@ -1,11 +1,24 @@
+// HAPUS BARIS INI SAAT DEPLOY
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:image_picker/image_picker.dart';
 
 import 'screens/loading.dart';
 
+// HAPUS BARIS INI SAAT DEPLOY, INI HANYA UNTUK TESTING PADA SAAT STAGING
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
+// HAPUS BARIS INI SAAT DEPLOY INI HANYA UNTUK TESTING PADA SAAT STAGING
+
 void main() {
+  // HAPUS BARIS INI SAAT DEPLOY INI HANYA UNTUK TESTING PADA SAAT STAGING
+  HttpOverrides.global = MyHttpOverrides();
   runApp(const App());
 }
 

@@ -1,5 +1,6 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:pos_kasir/constant.dart';
 import 'package:pos_kasir/models/api_response.dart';
@@ -16,9 +17,13 @@ Future<ApiResponse> login(String email, String password) async {
         headers: {'Accept': 'application/json'},
         body: {'email': email, 'password': password});
 
+    // for debug in console
+    // print(json.decode(response.body));
+
     switch (response.statusCode) {
       case 200:
         apiResponse.data = User.fromJson(jsonDecode(response.body));
+        // print(apiResponse.data);
         break;
       case 422:
         final errors = jsonDecode(response.body)['errors'];
@@ -32,9 +37,40 @@ Future<ApiResponse> login(String email, String password) async {
         break;
     }
   } catch (e) {
-    apiResponse.error = serverError;
-    // ignore: avoid_print
     print(e.toString());
+    apiResponse.error = serverError;
+  }
+
+  return apiResponse;
+}
+
+// Get User
+Future<ApiResponse> getUserList() async {
+  ApiResponse apiResponse = ApiResponse();
+  try {
+    String token = await getToken();
+    final response = await http.get(Uri.parse(userURL), headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token'
+    });
+
+    switch (response.statusCode) {
+      case 200:
+        // print(jsonDecode(response.body));
+        apiResponse.data = jsonDecode(response.body);
+        break;
+      case 403:
+        apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+      case 401:
+        apiResponse.error = unauthorized;
+        break;
+      default:
+        apiResponse.error = somethingWentWrong;
+        break;
+    }
+  } catch (e) {
+    apiResponse.error = serverError;
   }
 
   return apiResponse;
@@ -42,19 +78,28 @@ Future<ApiResponse> login(String email, String password) async {
 
 // Add user
 Future<ApiResponse> addUser(
-    String name, String email, String role, String password) async {
+  String name,
+  String email,
+  String role,
+  String password,
+  String passwordConfirmation,
+) async {
   ApiResponse apiResponse = ApiResponse();
 
   try {
+    String token = await getToken();
     final response = await http.post(Uri.parse(addUserURL), headers: {
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token'
     }, body: {
       'name': name,
       'role': role,
       'email': email,
       'password': password,
-      'password_confirmation': password
+      'password_confirmation': passwordConfirmation
     });
+
+    // print(json.decode(response.body));
 
     switch (response.statusCode) {
       case 200:
@@ -65,10 +110,100 @@ Future<ApiResponse> addUser(
         apiResponse.error = errors[errors.keys.elementAt(0)][0];
         break;
       default:
+        print(apiResponse.error);
         apiResponse.error = somethingWentWrong;
         break;
     }
   } catch (e) {
+    apiResponse.error = serverError;
+  }
+
+  return apiResponse;
+}
+
+// Delete User
+Future<ApiResponse> deleteUser(int userId) async {
+  // print('User ID to be deleted: $userId');
+  ApiResponse apiResponse = ApiResponse();
+  try {
+    String token = await getToken();
+    final response = await http.delete(Uri.parse('$userURL/$userId'), headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token'
+    });
+
+    print(json.decode(response.body));
+
+    switch (response.statusCode) {
+      case 200:
+        apiResponse.data = jsonDecode(response.body)['message'];
+        break;
+      case 403:
+        apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+      case 401:
+        apiResponse.error = unauthorized;
+        break;
+      default:
+        apiResponse.error = somethingWentWrong;
+        print(apiResponse.error);
+        break;
+    }
+  } catch (e) {
+    print(e);
+    apiResponse.error = serverError;
+  }
+
+  return apiResponse;
+}
+
+// Edit User
+Future<ApiResponse> editUser(
+  int? userId,
+  String name,
+  String email,
+  String role,
+) async {
+  // print('User ID to be deleted: $userId');
+  ApiResponse apiResponse = ApiResponse();
+  try {
+    if (userId == null) {
+      // Handle the case when userId is null
+      apiResponse.error = 'Invalid userId';
+      return apiResponse;
+    }
+
+    String token = await getToken();
+    final response = await http.put(
+      Uri.parse('$userURL/$userId'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: {
+        'name': name,
+        'email': email,
+        'role': role,
+      },
+    );
+    // print(json.decode(response.body));
+
+    switch (response.statusCode) {
+      case 200:
+        apiResponse.data = jsonDecode(response.body)['message'];
+        break;
+      case 403:
+        apiResponse.error = jsonDecode(response.body)['message'];
+        break;
+      case 401:
+        apiResponse.error = unauthorized;
+        break;
+      default:
+        apiResponse.error = somethingWentWrong;
+        break;
+    }
+  } catch (e) {
+    print(e);
     apiResponse.error = serverError;
   }
 
@@ -86,10 +221,12 @@ Future<ApiResponse> profile() async {
       'Accept': 'application/json',
       'Authorization': 'Bearer $token'
     });
-
+    // print('Response body: ${response.body}');
     switch (response.statusCode) {
       case 200:
+        // print(response.body);
         apiResponse.data = User.fromJson(jsonDecode(response.body));
+        // print(apiResponse.data);
         break;
       case 401:
         apiResponse.error = unauthorized;
@@ -105,8 +242,7 @@ Future<ApiResponse> profile() async {
   return apiResponse;
 }
 
-Future<ApiResponse> updateProfile(
-    String name, String? image, String email) async {
+Future<ApiResponse> updateProfile(String name, String email) async {
   ApiResponse apiResponse = ApiResponse();
   try {
     String token = await getToken();
@@ -128,6 +264,7 @@ Future<ApiResponse> updateProfile(
         break;
     }
   } catch (e) {
+    print(e.toString());
     apiResponse.error = serverError;
   }
 
@@ -150,9 +287,4 @@ Future<int> getUserId() async {
 Future<bool> logout() async {
   SharedPreferences pref = await SharedPreferences.getInstance();
   return pref.remove('token');
-}
-
-String? getStringImage(File? file) {
-  if (file == null) return null;
-  return base64Encode(file.readAsBytesSync());
 }

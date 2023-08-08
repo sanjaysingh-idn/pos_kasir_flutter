@@ -2,5 +2,7 @@ class ApiResponse {
   Object? data;
   String? error;
 
-  get errors => null;
+  Map<String, List<String>>? errors;
+
+  ApiResponse({this.data, this.error, this.errors});
 }

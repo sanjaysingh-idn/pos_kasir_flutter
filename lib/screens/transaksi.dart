@@ -77,7 +77,6 @@ class _TransaksiState extends State<Transaksi> {
           ),
         ),
       ),
-      drawer: const Sidebar(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         child: const Icon(Icons.shopping_cart),

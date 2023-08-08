@@ -6,7 +6,6 @@ import 'package:pos_kasir/services/user_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -69,29 +68,25 @@ class _LoginState extends State<Login> {
         child: ListView(
           padding: const EdgeInsets.all(25.0),
           children: [
-            const SizedBox(height: 30),
-            const Icon(
-              Icons.shopify,
-              size: 100,
-              color: Colors.lightBlue,
+            Image.asset(
+              "assets/img_default/logo.png",
+              width: 250,
+              height: 250,
             ),
 
             // Margin top
-            const SizedBox(height: 30),
 
             // Nama Toko
-            Center(
-              child: Text('TOKO SRI REJEKI',
-                  style: GoogleFonts.koulen(
-                    textStyle: const TextStyle(
-                        color: Colors.lightBlue,
-                        fontSize: 20,
-                        letterSpacing: 2,
-                        fontWeight: FontWeight.bold),
-                  )),
-            ),
-
-            const SizedBox(height: 30),
+            // Center(
+            //   child: Text('TOKO SRI REJEKI',
+            //       style: GoogleFonts.koulen(
+            //         textStyle: const TextStyle(
+            //             color: Colors.lightBlue,
+            //             fontSize: 20,
+            //             letterSpacing: 2,
+            //             fontWeight: FontWeight.bold),
+            //       )),
+            // ),
 
             TextFormField(
               keyboardType: TextInputType.emailAddress,

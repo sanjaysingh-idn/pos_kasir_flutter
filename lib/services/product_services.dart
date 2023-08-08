@@ -47,7 +47,7 @@ Future<ApiResponse> addProductWithImage(
   String name,
   int category,
   String desc,
-  String imagePath,
+  String image,
   int priceBuy,
   int priceSell,
   int stock,
@@ -75,7 +75,7 @@ Future<ApiResponse> addProductWithImage(
     // Add image file
     request.files.add(await http.MultipartFile.fromPath(
       'image',
-      imagePath,
+      image,
       contentType:
           MediaType('image', 'jpeg'), // Adjust the content type as needed
     ));
@@ -88,69 +88,11 @@ Future<ApiResponse> addProductWithImage(
       apiResponse.data = jsonDecode(responseBody);
     } else if (response.statusCode == 422) {
       final errors = jsonDecode(responseBody)['errors'];
-      apiResponse.errors[errors.keys.elementAt(0)] = [
-        errors.values.elementAt(0)
-      ];
+      apiResponse.error = errors[errors.keys.elementAt(0)][0];
     } else if (response.statusCode == 401) {
       apiResponse.error = unauthorized;
     } else {
       apiResponse.error = somethingWentWrong;
-    }
-  } catch (e) {
-    print(e.toString());
-  }
-
-  return apiResponse;
-}
-
-Future<ApiResponse> addProduct(
-  String name,
-  int category,
-  String desc,
-  String? image, // Update the parameter to be nullable
-  int priceBuy,
-  int priceSell,
-  int stock,
-  String barcode,
-) async {
-  ApiResponse apiResponse = ApiResponse();
-  try {
-    String token = await getToken();
-
-    final request = http.MultipartRequest('POST', Uri.parse(productURL));
-    request.headers['Accept'] = 'application/json';
-    request.headers['Authorization'] = 'Bearer $token';
-
-    request.fields['name'] = name;
-    request.fields['category'] = category.toString();
-    request.fields['desc'] = desc;
-    request.fields['priceBuy'] = priceBuy.toString();
-    request.fields['priceSell'] = priceSell.toString();
-    request.fields['stock'] = stock.toString();
-    request.fields['barcode'] = barcode;
-
-    if (image != null) {
-      var file = await http.MultipartFile.fromPath('image', image);
-      request.files.add(file);
-    }
-
-    final response = await request.send();
-    var responseData = await response.stream.transform(utf8.decoder).join();
-
-    switch (response.statusCode) {
-      case 200:
-        apiResponse.data = jsonDecode(responseData);
-        break;
-      case 422:
-        final errors = jsonDecode(responseData)['errors'];
-        apiResponse.errors[errors.keys.elementAt(0)][0];
-        break;
-      case 401:
-        apiResponse.error = unauthorized;
-        break;
-      default:
-        apiResponse.error = somethingWentWrong;
-        break;
     }
   } catch (e) {
     print(e.toString());
@@ -164,7 +106,7 @@ Future<ApiResponse> updateProductWithImage(
   String name,
   int category,
   String desc,
-  String imagePath,
+  String image,
   int priceBuy,
   int priceSell,
   int stock,
@@ -175,7 +117,7 @@ Future<ApiResponse> updateProductWithImage(
     String token = await getToken();
 
     var request =
-        http.MultipartRequest('PUT', Uri.parse('$productURL/$productId'));
+        http.MultipartRequest('POST', Uri.parse('$editProductURL/$productId'));
     request.headers.addAll({
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
@@ -190,11 +132,11 @@ Future<ApiResponse> updateProductWithImage(
     request.fields['stock'] = stock.toString();
     request.fields['barcode'] = barcode;
 
-    // Add image file
-    if (imagePath.isNotEmpty) {
+    // Add image file (only if the image is not empty)
+    if (image.isNotEmpty) {
       request.files.add(await http.MultipartFile.fromPath(
         'image',
-        imagePath,
+        image,
         contentType:
             MediaType('image', 'jpeg'), // Adjust the content type as needed
       ));
@@ -203,18 +145,75 @@ Future<ApiResponse> updateProductWithImage(
     final response = await request.send();
     final responseBody = await response.stream.bytesToString();
 
+    // print(responseBody);
+
     // Process the response
     if (response.statusCode == 200) {
       apiResponse.data = jsonDecode(responseBody);
     } else if (response.statusCode == 422) {
       final errors = jsonDecode(responseBody)['errors'];
-      apiResponse.errors[errors.keys.elementAt(0)] = [
-        errors.values.elementAt(0)
-      ];
+      apiResponse.error = errors[errors.keys.elementAt(0)][0];
+      print(apiResponse.error);
     } else if (response.statusCode == 401) {
       apiResponse.error = unauthorized;
     } else {
       apiResponse.error = somethingWentWrong;
+    }
+  } catch (e) {
+    print(e.toString());
+  }
+
+  return apiResponse;
+}
+
+Future<ApiResponse> updateProductWithoutImage(
+  int productId,
+  String name,
+  int category,
+  String desc,
+  int priceBuy,
+  int priceSell,
+  int stock,
+  String barcode,
+) async {
+  ApiResponse apiResponse = ApiResponse();
+  try {
+    String token = await getToken();
+
+    var request =
+        http.MultipartRequest('POST', Uri.parse('$editProductURL/$productId'));
+    request.headers.addAll({
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+      // '_method': 'PUT',
+    });
+
+    // Add product data
+    request.fields['name'] = name;
+    request.fields['category'] = category.toString();
+    request.fields['desc'] = desc;
+    request.fields['priceBuy'] = priceBuy.toString();
+    request.fields['priceSell'] = priceSell.toString();
+    request.fields['stock'] = stock.toString();
+    request.fields['barcode'] = barcode;
+
+    final response = await request.send();
+    final responseBody = await response.stream.bytesToString();
+
+    // print(request.fields['name']);
+    // print(response.statusCode);
+
+    // Process the response
+    if (response.statusCode == 200) {
+      apiResponse.data = jsonDecode(responseBody);
+    } else if (response.statusCode == 422) {
+      final errors = jsonDecode(responseBody)['errors'];
+      apiResponse.error = errors[errors.keys.elementAt(0)][0];
+    } else if (response.statusCode == 401) {
+      apiResponse.error = unauthorized;
+    } else {
+      apiResponse.error = somethingWentWrong;
+      print(apiResponse.error);
     }
   } catch (e) {
     print(e.toString());

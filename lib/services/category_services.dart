@@ -55,7 +55,7 @@ Future<ApiResponse> addCategory(String name) async {
         break;
       case 422:
         final errors = jsonDecode(response.body)['errors'];
-        apiResponse.errors[errors.keys.elementAt(0)][0];
+        apiResponse.errors![errors.keys.elementAt(0)]?[0];
         break;
       case 401:
         apiResponse.error = unauthorized;

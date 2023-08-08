@@ -2,10 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../screens/edit_product.dart';
-import '../screens/home.dart';
-
 import '../constant.dart';
+import '../screens/edit_product.dart';
+
 import '../models/api_response.dart';
 import 'add_produk.dart';
 import '../models/produk.dart';
@@ -99,6 +98,7 @@ class _ProductState extends State<Product> {
             child: ListTile(
               leading: product.image != null
                   ? CachedNetworkImage(
+                      // imageUrl: "http://via.placeholder.com/200x150",
                       imageUrl: "$imageUrl${product.image}",
                       width: 50,
                       height: 50,
@@ -165,6 +165,129 @@ class _ProductState extends State<Product> {
                         context: context,
                         builder: (context) => AlertDialog(
                           title: Text(product.name),
+                          content: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (product.image != null)
+                                CachedNetworkImage(
+                                  // imageUrl:
+                                  //     "http://via.placeholder.com/200x150",
+                                  imageUrl: "$imageUrl${product.image}",
+                                  width: 200,
+                                  height: 200,
+                                  // alignment: Alignment.center,
+                                  imageBuilder: (context, imageProvider) =>
+                                      Container(
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                        image: imageProvider,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  placeholder: (context, url) =>
+                                      const CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(Icons.error),
+                                ),
+                              const Divider(
+                                // Horizontal ruler
+                                color: Colors.grey,
+                                thickness: 1.0,
+                              ),
+                              const SizedBox(height: 15),
+                              Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      'Harga Beli',
+                                      textAlign: TextAlign.left,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      'Rp. ${NumberFormat('#,##0').format(product.priceBuy)}',
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      'Harga Jual',
+                                      textAlign: TextAlign.left,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      'Rp. ${NumberFormat('#,##0').format(product.priceSell)}',
+                                      textAlign: TextAlign.right,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      'Stock',
+                                      textAlign: TextAlign.left,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      '${product.stock}',
+                                      textAlign: TextAlign.right,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Expanded(
+                                    child: Text(
+                                      'Barcode',
+                                      textAlign: TextAlign.left,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      product.barcode,
+                                      textAlign: TextAlign.right,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              const Divider(
+                                // Horizontal ruler
+                                color: Colors.grey,
+                                thickness: 1.0,
+                              ),
+                              const SizedBox(height: 8),
+                              const Text('Description: '),
+                              const SizedBox(height: 8),
+                              Text(product.desc),
+                              // Add more details as needed
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Close'),
+                            ),
+                          ],
                         ),
                       );
                     },
@@ -176,15 +299,13 @@ class _ProductState extends State<Product> {
                   const SizedBox(width: 10),
                   GestureDetector(
                     onTap: () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (context) =>
-                      //         EditProductForm(product: product),
-                      //   ),
-                      // ).then((result) {
-                      //   // You can handle any result from the EditProductForm page if needed.
-                      // });
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EditProductForm(product: product),
+                        ),
+                      ).then((result) {});
                     },
                     child: const Icon(
                       Icons.edit_document,
@@ -233,6 +354,12 @@ class _ProductState extends State<Product> {
             bottomLeft: Radius.circular(10),
             bottomRight: Radius.circular(10),
           ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
       ),
       body: Column(
